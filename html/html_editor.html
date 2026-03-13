@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Editor - by Rodrigo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- CodeMirror 5 (estável e compatível com CDN tradicional) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchtags.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/jump-to-line.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css">
+
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --bg-elevated: #1c2128;
+      --border-color: #30363d;
+      --border-hover: #484f58;
+      --text-primary: #e6edf3;
+      --text-secondary: #7d8590;
+      --text-muted: #484f58;
+      --accent-primary: #2f81f7;
+      --accent-hover: #388bfd;
+      --accent-success: #238636;
+      --accent-success-hover: #2ea043;
+      --accent-warning: #d29922;
+      --accent-danger: #f85149;
+      --shadow-sm: 0 1px 0 rgba(0,0,0,0.2);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.6);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header Moderno */
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      z-index: 100;
+      position: relative;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-primary), #a371f7);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(47, 129, 247, 0.3);
+      transition: var(--transition-fast);
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(47, 129, 247, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      display: block;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      height: 36px;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    .icon-btn:active {
+      transform: translateY(0);
+    }
+
+    .icon-btn.danger {
+      color: var(--accent-danger);
+    }
+
+    .icon-btn.danger:hover {
+      background: rgba(248, 81, 73, 0.1);
+      border-color: var(--accent-danger);
+    }
+
+    .icon-btn.settings {
+      color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .icon-btn.settings:hover, .icon-btn.settings.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+
+    /* Layout Principal */
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Painéis */
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 300px;
+      background: var(--bg-primary);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      height: 44px;
+    }
+
+    .panel-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+
+    .panel-header .tag {
+      background: var(--bg-tertiary);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .editor-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    /* CodeMirror 5 Customização */
+    .CodeMirror {
+      height: 100%;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      background: var(--bg-primary) !important;
+      color: var(--text-primary) !important;
+    }
+
+    .CodeMirror-gutters {
+      background: var(--bg-secondary) !important;
+      border-right: 1px solid var(--border-color) !important;
+      color: var(--text-muted) !important;
+    }
+
+    .CodeMirror-linenumber {
+      color: var(--text-muted) !important;
+      padding: 0 12px 0 16px !important;
+    }
+
+    .CodeMirror-activeline-background {
+      background: rgba(47, 129, 247, 0.05) !important;
+    }
+
+    .CodeMirror-activeline-gutter {
+      background: var(--bg-tertiary) !important;
+    }
+
+    .CodeMirror-activeline-gutter .CodeMirror-linenumber {
+      color: var(--text-primary) !important;
+      font-weight: 500;
+    }
+
+    .CodeMirror-cursor {
+      border-left: 2px solid var(--accent-primary) !important;
+    }
+
+    .CodeMirror-selected {
+      background: rgba(47, 129, 247, 0.3) !important;
+    }
+
+    .CodeMirror-focused .CodeMirror-selected {
+      background: rgba(47, 129, 247, 0.4) !important;
+    }
+
+    .CodeMirror-matchingbracket {
+      background: rgba(47, 129, 247, 0.3) !important;
+      color: var(--text-primary) !important;
+      font-weight: bold;
+    }
+
+    .CodeMirror-matchingtag {
+      background: rgba(47, 129, 247, 0.2) !important;
+    }
+
+    /* Syntax Highlighting Colors - Dracula Theme Override */
+    .cm-tag { color: #ff79c6 !important; }
+    .cm-attribute { color: #50fa7b !important; }
+    .cm-string { color: #f1fa8c !important; }
+    .cm-comment { color: #6272a4 !important; font-style: italic; }
+    .cm-keyword { color: #ff79c6 !important; }
+    .cm-operator { color: #ff79c6 !important; }
+    .cm-property { color: #8be9fd !important; }
+    .cm-variable { color: #f8f8f2 !important; }
+    .cm-variable-2 { color: #8be9fd !important; }
+    .cm-def { color: #50fa7b !important; }
+    .cm-bracket { color: #f8f8f2 !important; }
+    .cm-link { color: #8be9fd !important; }
+    .cm-error { color: #ff5555 !important; background: rgba(255, 85, 85, 0.2) !important; }
+
+    /* Scrollbars */
+    .CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler {
+      background: var(--bg-primary) !important;
+    }
+
+    .CodeMirror-simplescroll-horizontal div, 
+    .CodeMirror-simplescroll-vertical div {
+      background: var(--border-color) !important;
+      border-radius: 6px !important;
+      border: none !important;
+    }
+
+    .CodeMirror-simplescroll-horizontal div:hover, 
+    .CodeMirror-simplescroll-vertical div:hover {
+      background: var(--border-hover) !important;
+    }
+
+    /* Divisor Arrastável */
+    #divider {
+      width: 8px;
+      background: var(--bg-secondary);
+      cursor: col-resize;
+      position: relative;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 50;
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+    }
+
+    #divider:hover, #divider.resizing {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    #divider::after {
+      content: '';
+      width: 3px;
+      height: 32px;
+      background: var(--text-muted);
+      border-radius: 2px;
+      opacity: 0.5;
+      transition: var(--transition-fast);
+    }
+
+    #divider:hover::after, #divider.resizing::after {
+      background: white;
+      opacity: 1;
+    }
+
+    /* Painel do Preview */
+    #viewer {
+      flex: 1;
+      border: none;
+      background: white;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Painel de Configurações */
+    .settings-panel {
+      position: fixed;
+      top: 60px;
+      right: -400px;
+      width: 380px;
+      height: calc(100vh - 60px);
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .settings-panel.open {
+      right: 0;
+    }
+
+    .settings-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-header h2 svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-primary);
+    }
+
+    .close-settings {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-settings:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .close-settings svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .settings-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .settings-section {
+      margin-bottom: 28px;
+    }
+
+    .settings-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+      margin-left: 8px;
+    }
+
+    /* Toggle Switch Moderno */
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .setting-info {
+      flex: 1;
+      padding-right: 16px;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-description {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      background: var(--bg-tertiary);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      border: 2px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .toggle-switch.active {
+      background: var(--accent-success);
+      border-color: var(--accent-success);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch.active::after {
+      transform: translateX(22px);
+    }
+
+    /* Select Customizado */
+    .custom-select {
+      position: relative;
+      min-width: 140px;
+    }
+
+    .custom-select select {
+      appearance: none;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 32px 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      width: 100%;
+      outline: none;
+      transition: var(--transition-fast);
+    }
+
+    .custom-select select:hover {
+      border-color: var(--border-hover);
+    }
+
+    .custom-select select:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .custom-select::after {
+      content: '▼';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    /* Botão de Reset */
+    .settings-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+    }
+
+    .btn-reset {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-reset:hover {
+      background: var(--bg-tertiary);
+      color: var(--accent-danger);
+      border-color: var(--accent-danger);
+    }
+
+    /* Overlay quando settings está aberto */
+    .settings-overlay {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 150;
+    }
+
+    .settings-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Barra de Status/Controles */
+    #controls {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 60px;
+      z-index: 100;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-success);
+      box-shadow: 0 0 8px var(--accent-success);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .status-indicator.paused {
+      background: var(--accent-warning);
+      box-shadow: 0 0 8px var(--accent-warning);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .status-separator {
+      width: 1px;
+      height: 16px;
+      background: var(--border-color);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      height: 36px;
+      white-space: nowrap;
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+
+    .btn-primary {
+      background: var(--accent-success);
+      color: white;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 2px 0 rgba(0,0,0,0.2);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-success-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4), 0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.2) inset;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(0);
+    }
+
+    .btn-accent {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 2px 0 rgba(0,0,0,0.2);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(47, 129, 247, 0.4), 0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+
+    .btn-accent:active {
+      transform: translateY(0);
+    }
+
+    /* Overlay de Resize */
+    .resize-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+      cursor: col-resize;
+      display: none;
+      background: rgba(0,0,0,0.1);
+    }
+
+    .resize-overlay.active {
+      display: block;
+    }
+
+    /* Tooltip Avançado */
+    [data-tooltip] {
+      position: relative;
+    }
+
+    [data-tooltip]::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) scale(0.95);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-fast);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-md);
+      z-index: 1000;
+      letter-spacing: 0.01em;
+    }
+
+    [data-tooltip]::after {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 3px);
+      left: 50%;
+      transform: translateX(-50%) scale(0.95);
+      border-width: 5px;
+      border-style: solid;
+      border-color: var(--bg-elevated) transparent transparent transparent;
+      opacity: 0;
+      transition: var(--transition-fast);
+      z-index: 1000;
+    }
+
+    [data-tooltip]:hover::before, [data-tooltip]:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1001;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: auto;
+      min-width: 280px;
+      max-width: 400px;
+    }
+
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .toast.success .toast-icon {
+      background: rgba(35, 134, 54, 0.2);
+      color: var(--accent-success);
+      border: 1px solid var(--accent-success);
+    }
+
+    .toast.error .toast-icon {
+      background: rgba(248, 81, 73, 0.2);
+      color: var(--accent-danger);
+      border: 1px solid var(--accent-danger);
+    }
+
+    .toast.warning .toast-icon {
+      background: rgba(210, 153, 34, 0.2);
+      color: var(--accent-warning);
+      border: 1px solid var(--accent-warning);
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+      color: var(--text-primary);
+    }
+
+    .toast-message {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .settings-panel {
+        width: 100%;
+        right: -100%;
+      }
+
+      main {
+        flex-direction: column;
+      }
+      
+      #divider {
+        width: 100%;
+        height: 8px;
+        cursor: row-resize;
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+      }
+      
+      #divider::after {
+        width: 32px;
+        height: 3px;
+      }
+      
+      .header-actions .icon-btn span {
+        display: none;
+      }
+      
+      .panel {
+        min-height: 200px;
+      }
+      
+      .btn-group button span {
+        display: none;
+      }
+      
+      #controls {
+        padding: 10px 16px;
+        height: auto;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      
+      .status-bar {
+        width: 100%;
+        justify-content: space-between;
+        order: 2;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .status-separator {
+        display: none;
+      }
+      
+      .btn-group {
+        width: 100%;
+        justify-content: stretch;
+        order: 1;
+      }
+      
+      .btn-group button {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    /* Scrollbar Styling Global */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 6px;
+      border: 3px solid var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-hover);
+    }
+
+    /* Diálogo de busca do CodeMirror */
+    .CodeMirror-dialog {
+      background: var(--bg-secondary) !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      color: var(--text-primary) !important;
+      padding: 10px 20px !important;
+    }
+
+    .CodeMirror-dialog input {
+      background: var(--bg-tertiary) !important;
+      border: 1px solid var(--border-color) !important;
+      color: var(--text-primary) !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 6px 12px !important;
+      font-family: inherit !important;
+    }
+
+    .CodeMirror-dialog button {
+      background: var(--bg-tertiary) !important;
+      border: 1px solid var(--border-color) !important;
+      color: var(--text-primary) !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 6px 12px !important;
+      margin-left: 8px !important;
+      cursor: pointer !important;
+    }
+
+    .CodeMirror-dialog button:hover {
+      background: var(--bg-elevated) !important;
+      border-color: var(--border-hover) !important;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">&lt;/&gt;</div>
+      <div class="brand-text">
+        <h1>HTML Editor</h1>
+        <span>Editor Profissional • by Rodrigo Ramos</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="copyCode()" data-tooltip="Copiar código (Ctrl+C)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>Copiar</span>
+      </button>
+      <button class="icon-btn danger" onclick="clearEditor()" data-tooltip="Limpar editor (Ctrl+L)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        <span>Limpar</span>
+      </button>
+      <button class="icon-btn settings" id="settingsBtn" onclick="toggleSettings()" data-tooltip="Configurações do editor">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Ajustes</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="panel" id="editorPanel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Editor HTML</span>
+        </div>
+        <span class="tag" id="editorModeTag">CodeMirror 5</span>
+      </div>
+      <div class="editor-container" id="editorContainer">
+        <textarea id="codeEditor"></textarea>
+      </div>
+    </div>
+
+    <div id="divider"></div>
+
+    <div class="panel" id="viewerPanel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>Preview ao Vivo</span>
+        </div>
+        <span class="tag" id="previewModeTag">Auto-render</span>
+      </div>
+      <iframe id="viewer" sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-forms"></iframe>
+    </div>
+  </main>
+
+  <div id="controls">
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-indicator" id="autoRenderIndicator"></div>
+        <span id="autoRenderStatus">Auto-render ativo</span>
+      </div>
+      <div class="status-separator"></div>
+      <div class="status-item" id="charCount">0 caracteres</div>
+      <div class="status-item" id="lineCount">0 linhas</div>
+      <div class="status-item" id="cursorPos">Ln 1, Col 1</div>
+      <div class="status-separator"></div>
+      <div class="status-item" id="lastUpdate">Pronto</div>
+    </div>
+    <div class="btn-group">
+      <button class="btn-secondary" onclick="saveFile()" data-tooltip="Baixar como .html (Ctrl+S)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        <span>Salvar</span>
+      </button>
+      <button class="btn-accent" onclick="openInNewTab()" data-tooltip="Abrir preview em nova aba">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span>Nova Aba</span>
+      </button>
+      <button class="btn-primary" onclick="forceRender()" data-tooltip="Atualizar preview (Ctrl+Enter)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span>Renderizar</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="resize-overlay" id="resizeOverlay"></div>
+  
+  <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+  
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Configurações do Editor
+      </h2>
+      <button class="close-settings" onclick="toggleSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="settings-content">
+      <!-- Seção: Aparência -->
+      <div class="settings-section">
+        <div class="settings-section-title">Aparência</div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                <line x1="9" y1="20" x2="15" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+              </svg>
+              Syntax Highlighting
+            </div>
+            <div class="setting-description">Coloração sintática para HTML, CSS e JavaScript</div>
+          </div>
+          <div class="toggle-switch active" id="toggleHighlight" onclick="toggleSetting('highlight')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+              Números de Linha
+            </div>
+            <div class="setting-description">Exibir numeração à esquerda do código</div>
+          </div>
+          <div class="toggle-switch active" id="toggleLineNumbers" onclick="toggleSetting('lineNumbers')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+              Quebra de Linha
+            </div>
+            <div class="setting-description">Quebrar linhas automaticamente ao ultrapassar a largura</div>
+          </div>
+          <div class="toggle-switch" id="toggleLineWrap" onclick="toggleSetting('lineWrap')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+              </svg>
+              Destacar Linha Ativa
+            </div>
+            <div class="setting-description">Realçar a linha onde o cursor está posicionado</div>
+          </div>
+          <div class="toggle-switch active" id="toggleActiveLine" onclick="toggleSetting('activeLine')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              Destacar Pares de Tags
+            </div>
+            <div class="setting-description">Realçar tags HTML correspondentes</div>
+          </div>
+          <div class="toggle-switch active" id="toggleMatchTags" onclick="toggleSetting('matchTags')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+              Destacar Brackets
+            </div>
+            <div class="setting-description">Realçar colchetes e parênteses correspondentes</div>
+          </div>
+          <div class="toggle-switch active" id="toggleMatchBrackets" onclick="toggleSetting('matchBrackets')"></div>
+        </div>
+      </div>
+
+      <!-- Seção: Comportamento -->
+      <div class="settings-section">
+        <div class="settings-section-title">Comportamento</div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Auto-render
+            </div>
+            <div class="setting-description">Atualizar preview automaticamente ao digitar</div>
+          </div>
+          <div class="toggle-switch active" id="toggleAutoRender" onclick="toggleSetting('autoRender')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                <path d="M2 2l7.586 7.586"></path>
+                <circle cx="11" cy="11" r="2"></circle>
+              </svg>
+              Fechamento Automático
+            </div>
+            <div class="setting-description">Fechar tags e brackets automaticamente</div>
+          </div>
+          <div class="toggle-switch active" id="toggleAutoClose" onclick="toggleSetting('autoClose')"></div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                <line x1="9" y1="20" x2="15" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+              </svg>
+              Indentação com Tab
+            </div>
+            <div class="setting-description">Usar Tab para indentar em vez de mudar foco</div>
+          </div>
+          <div class="toggle-switch active" id="toggleIndent" onclick="toggleSetting('indent')"></div>
+        </div>
+      </div>
+
+      <!-- Seção: Editor -->
+      <div class="settings-section">
+        <div class="settings-section-title">Editor</div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <text x="4" y="18" font-family="monospace" font-size="14" fill="currentColor">Tt</text>
+              </svg>
+              Tamanho da Fonte
+            </div>
+            <div class="setting-description">Ajustar o tamanho do texto no editor</div>
+          </div>
+          <div class="custom-select">
+            <select id="fontSizeSelect" onchange="changeFontSize(this.value)">
+              <option value="12">12px</option>
+              <option value="13">13px</option>
+              <option value="14" selected>14px</option>
+              <option value="15">15px</option>
+              <option value="16">16px</option>
+              <option value="18">18px</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="21" y1="6" x2="3" y2="6"></line>
+                <line x1="17" y1="12" x2="7" y2="12"></line>
+                <line x1="19" y1="18" x2="5" y2="18"></line>
+              </svg>
+              Espaçamento entre Linhas
+            </div>
+            <div class="setting-description">Altura da linha no editor</div>
+          </div>
+          <div class="custom-select">
+            <select id="lineHeightSelect" onchange="changeLineHeight(this.value)">
+              <option value="1.4">Compacto (1.4)</option>
+              <option value="1.6" selected>Padrão (1.6)</option>
+              <option value="1.8">Confortável (1.8)</option>
+              <option value="2.0">Amplo (2.0)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção: Persistência -->
+      <div class="settings-section">
+        <div class="settings-section-title">Persistência</div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Salvar Automaticamente
+            </div>
+            <div class="setting-description">Manter conteúdo no localStorage ao sair</div>
+          </div>
+          <div class="toggle-switch active" id="toggleAutoSave" onclick="toggleSetting('autoSave')"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-footer">
+      <button class="btn-reset" onclick="resetSettings()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Restaurar Configurações Padrão
+      </button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // Estado global e configurações
+    let editor;
+    let typingTimer;
+    const debounceDelay = 400;
+    let isResizing = false;
+    
+    // Configurações padrão
+    const defaultSettings = {
+      highlight: true,
+      lineNumbers: true,
+      lineWrap: false,
+      activeLine: true,
+      matchTags: true,
+      matchBrackets: true,
+      autoRender: true,
+      autoClose: true,
+      indent: true,
+      fontSize: '14',
+      lineHeight: '1.6',
+      autoSave: true
+    };
+
+    // Carregar configurações
+    let settings = { ...defaultSettings };
+    const savedSettings = localStorage.getItem('htmlStudioSettings');
+    if (savedSettings) {
+      settings = { ...defaultSettings, ...JSON.parse(savedSettings) };
+    }
+
+    // Elementos DOM
+    const viewer = document.getElementById('viewer');
+    const divider = document.getElementById('divider');
+    const main = document.getElementById('main');
+    const resizeOverlay = document.getElementById('resizeOverlay');
+    const charCount = document.getElementById('charCount');
+    const lineCount = document.getElementById('lineCount');
+    const cursorPos = document.getElementById('cursorPos');
+    const lastUpdate = document.getElementById('lastUpdate');
+    const editorPanel = document.getElementById('editorPanel');
+    const viewerPanel = document.getElementById('viewerPanel');
+    const toastContainer = document.getElementById('toastContainer');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const settingsBtn = document.getElementById('settingsBtn');
+
+    // Código inicial
+    const defaultCode = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Projeto Incrível</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    p {
+      font-size: 1.25rem;
+      opacity: 0.9;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      margin-top: 1rem;
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Olá Mundo!</h1>
+    <p>Comece a editar o código à esquerda para ver a mágica acontecer...</p>
+    <span class="badge">HTML Studio Pro</span>
+  </div>
+</body>
+</html>`;
+
+    // Inicialização do CodeMirror 5
+    function initEditor() {
+      try {
+        const textarea = document.getElementById('codeEditor');
+        const savedContent = settings.autoSave ? localStorage.getItem('htmlStudioContent') : null;
+        textarea.value = savedContent || defaultCode;
+
+        // Configuração base
+        const config = {
+          mode: settings.highlight ? 'htmlmixed' : 'text/plain',
+          theme: 'dracula',
+          lineNumbers: settings.lineNumbers,
+          lineWrapping: settings.lineWrap,
+          styleActiveLine: settings.activeLine,
+          matchBrackets: settings.matchBrackets,
+          matchTags: settings.matchTags ? { bothTags: true } : false,
+          autoCloseBrackets: settings.autoClose,
+          autoCloseTags: settings.autoClose,
+          tabSize: 2,
+          indentWithTabs: false,
+          extraKeys: {
+            "Ctrl-Space": "autocomplete",
+            "Ctrl-F": "find",
+            "Ctrl-G": "findNext",
+            "Shift-Ctrl-G": "findPrev",
+            "Shift-Ctrl-F": "replace",
+            "Shift-Ctrl-R": "replaceAll",
+            "Ctrl-/": "toggleComment",
+            "Ctrl-J": "toMatchingTag",
+            "Tab": settings.indent ? function(cm) {
+              if (cm.somethingSelected()) {
+                cm.indentSelection("add");
+              } else {
+                cm.replaceSelection("  ", "end");
+              }
+            } : false,
+            "Shift-Tab": function(cm) {
+              cm.indentSelection("subtract");
+            }
+          },
+          scrollbarStyle: 'simple',
+          viewportMargin: Infinity
+        };
+
+        // Criar editor
+        editor = CodeMirror.fromTextArea(textarea, config);
+
+        // Aplicar estilos customizados
+        editor.getWrapperElement().style.fontSize = settings.fontSize + 'px';
+        editor.getWrapperElement().style.lineHeight = settings.lineHeight;
+        
+        // Eventos
+        editor.on('change', handleEditorChange);
+        editor.on('cursorActivity', updateCursorPosition);
+        
+        // Renderização inicial
+        renderHtml();
+        updateStats(editor.getValue());
+        updateLastUpdate(true);
+        updateAutoRenderStatus();
+        updateCursorPosition();
+
+        showToast('Editor pronto!', 'success', 'Use o botão "Ajustes" para personalizar');
+
+      } catch (error) {
+        console.error('Erro ao inicializar editor:', error);
+        showToast('Erro ao carregar editor', 'error', 'Verifique o console para detalhes');
+      }
+    }
+
+    // Toggle Settings Panel
+    function toggleSettings() {
+      const isOpen = settingsPanel.classList.contains('open');
+      if (isOpen) {
+        settingsPanel.classList.remove('open');
+        settingsOverlay.classList.remove('active');
+        settingsBtn.classList.remove('active');
+      } else {
+        settingsPanel.classList.add('open');
+        settingsOverlay.classList.add('active');
+        settingsBtn.classList.add('active');
+        updateSettingsUI();
+      }
+    }
+
+    // Atualizar UI das configurações
+    function updateSettingsUI() {
+      Object.keys(settings).forEach(key => {
+        const toggle = document.getElementById('toggle' + key.charAt(0).toUpperCase() + key.slice(1));
+        if (toggle) {
+          toggle.classList.toggle('active', settings[key]);
+        }
+      });
+
+      const fontSizeSelect = document.getElementById('fontSizeSelect');
+      const lineHeightSelect = document.getElementById('lineHeightSelect');
+      if (fontSizeSelect) fontSizeSelect.value = settings.fontSize;
+      if (lineHeightSelect) lineHeightSelect.value = settings.lineHeight;
+    }
+
+    // Toggle individual setting
+    function toggleSetting(key) {
+      settings[key] = !settings[key];
+      saveSettings();
+      updateSettingsUI();
+      
+      if (key === 'autoRender') {
+        updateAutoRenderStatus();
+      }
+      
+      // Aplicar mudanças que não precisam recriar o editor
+      if (key === 'lineWrap') {
+        editor.setOption('lineWrapping', settings.lineWrap);
+      } else if (key === 'activeLine') {
+        editor.setOption('styleActiveLine', settings.activeLine);
+      } else if (key === 'matchBrackets') {
+        editor.setOption('matchBrackets', settings.matchBrackets);
+      } else if (key === 'matchTags') {
+        editor.setOption('matchTags', settings.matchTags ? { bothTags: true } : false);
+      } else if (key === 'fontSize' || key === 'lineHeight') {
+        // Já tratado separadamente
+      } else {
+        // Para outras mudanças, recriar é mais seguro
+        recreateEditor();
+        return;
+      }
+      
+      const labels = {
+        highlight: 'Syntax highlighting',
+        lineNumbers: 'Números de linha',
+        lineWrap: 'Quebra de linha',
+        activeLine: 'Destaque de linha',
+        matchTags: 'Pares de tags',
+        matchBrackets: 'Brackets',
+        autoRender: 'Auto-render',
+        autoClose: 'Fechamento automático',
+        indent: 'Indentação com Tab',
+        autoSave: 'Salvamento automático'
+      };
+      
+      showToast(
+        settings[key] ? 'Ativado' : 'Desativado', 
+        settings[key] ? 'success' : 'warning',
+        labels[key]
+      );
+    }
+
+    // Mudar tamanho da fonte
+    function changeFontSize(size) {
+      settings.fontSize = size;
+      saveSettings();
+      editor.getWrapperElement().style.fontSize = size + 'px';
+      editor.refresh();
+      showToast('Tamanho da fonte alterado', 'success', `${size}px`);
+    }
+
+    // Mudar altura da linha
+    function changeLineHeight(height) {
+      settings.lineHeight = height;
+      saveSettings();
+      editor.getWrapperElement().style.lineHeight = height;
+      editor.refresh();
+      showToast('Espaçamento alterado', 'success');
+    }
+
+    // Recriar editor com novas configurações
+    function recreateEditor() {
+      const content = editor.getValue();
+      const scrollInfo = editor.getScrollInfo();
+      const cursor = editor.getCursor();
+      
+      editor.toTextArea();
+      
+      setTimeout(() => {
+        initEditorWithContent(content, cursor, scrollInfo);
+      }, 10);
+    }
+
+    // Inicializar com conteúdo específico
+    function initEditorWithContent(content, cursor, scrollInfo) {
+      try {
+        const textarea = document.getElementById('codeEditor');
+        textarea.value = content;
+
+        const config = {
+          mode: settings.highlight ? 'htmlmixed' : 'text/plain',
+          theme: 'dracula',
+          lineNumbers: settings.lineNumbers,
+          lineWrapping: settings.lineWrap,
+          styleActiveLine: settings.activeLine,
+          matchBrackets: settings.matchBrackets,
+          matchTags: settings.matchTags ? { bothTags: true } : false,
+          autoCloseBrackets: settings.autoClose,
+          autoCloseTags: settings.autoClose,
+          tabSize: 2,
+          indentWithTabs: false,
+          extraKeys: {
+            "Ctrl-Space": "autocomplete",
+            "Ctrl-F": "find",
+            "Ctrl-G": "findNext",
+            "Shift-Ctrl-G": "findPrev",
+            "Shift-Ctrl-F": "replace",
+            "Shift-Ctrl-R": "replaceAll",
+            "Ctrl-/": "toggleComment",
+            "Ctrl-J": "toMatchingTag",
+            "Tab": settings.indent ? function(cm) {
+              if (cm.somethingSelected()) {
+                cm.indentSelection("add");
+              } else {
+                cm.replaceSelection("  ", "end");
+              }
+            } : false,
+            "Shift-Tab": function(cm) {
+              cm.indentSelection("subtract");
+            }
+          },
+          scrollbarStyle: 'simple',
+          viewportMargin: Infinity
+        };
+
+        editor = CodeMirror.fromTextArea(textarea, config);
+        editor.getWrapperElement().style.fontSize = settings.fontSize + 'px';
+        editor.getWrapperElement().style.lineHeight = settings.lineHeight;
+        
+        editor.on('change', handleEditorChange);
+        editor.on('cursorActivity', updateCursorPosition);
+        
+        // Restaurar posição
+        if (cursor) editor.setCursor(cursor);
+        if (scrollInfo) editor.scrollTo(scrollInfo.left, scrollInfo.top);
+        
+      } catch (error) {
+        console.error('Erro ao recriar editor:', error);
+      }
+    }
+
+    // Salvar configurações
+    function saveSettings() {
+      localStorage.setItem('htmlStudioSettings', JSON.stringify(settings));
+    }
+
+    // Resetar configurações
+    function resetSettings() {
+      if (!confirm('Restaurar todas as configurações para o padrão?')) return;
+      
+      settings = { ...defaultSettings };
+      saveSettings();
+      updateSettingsUI();
+      recreateEditor();
+      showToast('Configurações restauradas', 'success', 'Padrões redefinidos');
+    }
+
+    // Atualizar status do auto-render
+    function updateAutoRenderStatus() {
+      const indicator = document.getElementById('autoRenderIndicator');
+      const status = document.getElementById('autoRenderStatus');
+      const tag = document.getElementById('previewModeTag');
+      
+      if (settings.autoRender) {
+        indicator.classList.remove('paused');
+        status.textContent = 'Auto-render ativo';
+        tag.textContent = 'Auto-render';
+      } else {
+        indicator.classList.add('paused');
+        status.textContent = 'Auto-render pausado';
+        tag.textContent = 'Manual';
+      }
+    }
+
+    // Manipular mudanças no editor
+    function handleEditorChange() {
+      const content = editor.getValue();
+      updateStats(content);
+      
+      if (settings.autoSave) {
+        localStorage.setItem('htmlStudioContent', content);
+      }
+      
+      if (settings.autoRender) {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+          renderHtml();
+          updateLastUpdate();
+        }, debounceDelay);
+      }
+    }
+
+    // Atualizar estatísticas
+    function updateStats(content) {
+      const length = content.length;
+      const lines = content.split('\n').length;
+      charCount.textContent = `${length.toLocaleString()} caracter${length !== 1 ? 'es' : ''}`;
+      lineCount.textContent = `${lines} linha${lines !== 1 ? 's' : ''}`;
+    }
+
+    // Atualizar posição do cursor
+    function updateCursorPosition() {
+      const pos = editor.getCursor();
+      cursorPos.textContent = `Ln ${pos.line + 1}, Col ${pos.ch + 1}`;
+    }
+
+    // Atualizar timestamp
+    function updateLastUpdate(initial = false) {
+      const now = new Date();
+      const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      lastUpdate.textContent = initial ? 'Pronto para edição' : `Atualizado às ${time}`;
+    }
+
+    // Renderizar HTML
+    function renderHtml() {
+      const htmlContent = editor.getValue();
+      const doc = viewer.contentDocument || viewer.contentWindow.document;
+      
+      try {
+        doc.open();
+        doc.write(htmlContent);
+        doc.close();
+        
+        const base = doc.createElement('base');
+        base.target = '_blank';
+        if (doc.head) doc.head.insertBefore(base, doc.head.firstChild);
+      } catch (error) {
+        showToast('Erro ao renderizar HTML', 'error');
+      }
+    }
+
+    // Forçar renderização
+    function forceRender() {
+      clearTimeout(typingTimer);
+      renderHtml();
+      updateLastUpdate();
+      showToast('Preview atualizado!', 'success');
+    }
+
+    // Abrir em nova aba
+    function openInNewTab() {
+      const htmlContent = editor.getValue();
+      if (!htmlContent.trim()) {
+        showToast('Editor está vazio!', 'error');
+        return;
+      }
+
+      try {
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const newWindow = window.open(url, '_blank');
+        
+        if (newWindow) {
+          showToast('Aberto em nova aba!', 'success');
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } else {
+          showToast('Popup bloqueado pelo navegador', 'error');
+        }
+      } catch (error) {
+        showToast('Erro ao abrir nova aba', 'error');
+      }
+    }
+
+    // Salvar arquivo
+    function saveFile() {
+      const htmlContent = editor.getValue();
+      if (!htmlContent.trim()) {
+        showToast('Nada para salvar!', 'error');
+        return;
+      }
+
+      try {
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        const titleMatch = htmlContent.match(/<title>(.*?)<\/title>/i);
+        const fileName = titleMatch ? 
+          `${titleMatch[1].trim().replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html` : 
+          `projeto_${Date.now()}.html`;
+        
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Arquivo salvo!', 'success', fileName);
+      } catch (error) {
+        showToast('Erro ao salvar arquivo', 'error');
+      }
+    }
+
+    // Limpar editor
+    function clearEditor() {
+      const content = editor.getValue();
+      if (content.trim() && !confirm('Deseja limpar todo o conteúdo?')) return;
+      
+      editor.setValue('');
+      renderHtml();
+      updateStats('');
+      if (settings.autoSave) localStorage.setItem('htmlStudioContent', '');
+      showToast('Editor limpo', 'success');
+      editor.focus();
+    }
+
+    // Copiar código
+    function copyCode() {
+      const content = editor.getValue();
+      
+      navigator.clipboard.writeText(content).then(() => {
+        showToast('Código copiado!', 'success');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = content;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('Código copiado!', 'success');
+      });
+    }
+
+    // Toast notification
+    function showToast(title, type = 'success', message = '') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = { success: '✓', error: '✕', warning: '⚠' };
+      
+      toast.innerHTML = `
+        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
+    }
+
+    // Sistema de Resize
+    divider.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      divider.classList.add('resizing');
+      resizeOverlay.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      editorPanel.style.pointerEvents = 'none';
+      viewerPanel.style.pointerEvents = 'none';
+    });
+
+    resizeOverlay.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      
+      const rect = main.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = (x / rect.width) * 100;
+      
+      if (percentage > 25 && percentage < 75) {
+        editorPanel.style.flex = `0 0 ${percentage}%`;
+        viewerPanel.style.flex = `0 0 ${100 - percentage}%`;
+      }
+    });
+
+    const stopResizing = () => {
+      if (!isResizing) return;
+      isResizing = false;
+      divider.classList.remove('resizing');
+      resizeOverlay.classList.remove('active');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      editorPanel.style.pointerEvents = '';
+      viewerPanel.style.pointerEvents = '';
+      localStorage.setItem('splitRatio', editorPanel.style.flex);
+      
+      // Refresh editor após resize
+      if (editor) editor.refresh();
+    };
+
+    resizeOverlay.addEventListener('mouseup', stopResizing);
+    resizeOverlay.addEventListener('mouseleave', stopResizing);
+
+    // Touch support
+    divider.addEventListener('touchstart', (e) => {
+      isResizing = true;
+      divider.classList.add('resizing');
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (!isResizing) return;
+      const touch = e.touches[0];
+      const rect = main.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const percentage = (x / rect.width) * 100;
+      
+      if (percentage > 25 && percentage < 75) {
+        editorPanel.style.flex = `0 0 ${percentage}%`;
+        viewerPanel.style.flex = `0 0 ${100 - percentage}%`;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+      if (isResizing) {
+        isResizing = false;
+        divider.classList.remove('resizing');
+        localStorage.setItem('splitRatio', editorPanel.style.flex);
+        if (editor) editor.refresh();
+      }
+    });
+
+    // Atalhos de teclado
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveFile();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        forceRender();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        clearEditor();
+      }
+      if (e.key === 'Escape' && settingsPanel.classList.contains('open')) {
+        toggleSettings();
+      }
+    });
+
+    // Restaurar proporção salva
+    const savedRatio = localStorage.getItem('splitRatio');
+    if (savedRatio) {
+      editorPanel.style.flex = savedRatio;
+      viewerPanel.style.flex = '1';
+    }
+
+    // Inicializar quando DOM estiver pronto
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initEditor);
+    } else {
+      initEditor();
+    }
+
+    // Expor funções globais
+    window.toggleSettings = toggleSettings;
+    window.toggleSetting = toggleSetting;
+    window.changeFontSize = changeFontSize;
+    window.changeLineHeight = changeLineHeight;
+    window.resetSettings = resetSettings;
+    window.clearEditor = clearEditor;
+    window.copyCode = copyCode;
+    window.saveFile = saveFile;
+    window.openInNewTab = openInNewTab;
+    window.forceRender = forceRender;
+  </script>
+</body>
+</html>
