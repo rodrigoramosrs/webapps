@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="meta.title">WebApps Lab | rodrigoramosrs</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- i18next + Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.16/dist/umd/i18next.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/i18next-browser-languagedetector@7.2.0/dist/umd/i18nextBrowserLanguageDetector.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background: #050505; overflow-x: hidden; }
+        
+        .noise {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+                         0 0 20px rgba(255, 255, 255, 0.3),
+                         0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5),
+                        0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: black;
+        }
+
+        .filter-btn.active {
+            background: white;
+            color: black;
+        }
+
+        [data-i18n] { transition: opacity 0.2s; }
+        .i18n-loading [data-i18n] { opacity: 0; }
+    </style>
+</head>
+<body class="text-white font-sans antialiased i18n-loading">
+
+    <!-- Noise Overlay -->
+    <div class="noise"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-40 glass-panel border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span class="font-mono text-sm tracking-widest text-gray-400" data-i18n="nav.brand">LAB://rodrigoramosrs/webapps</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <!-- Language Switcher -->
+                <div class="flex gap-2" id="lang-switcher">
+                    <button class="lang-btn px-3 py-1 rounded text-xs font-mono border border-white/20 hover:bg-white/10 transition-all" data-lang="pt-BR" data-i18n="lang.pt">PT</button>
+                    <button class="lang-btn px-3 py-1 rounded text-xs font-mono border border-white/20 hover:bg-white/10 transition-all" data-lang="en" data-i18n="lang.en">EN</button>
+                    <button class="lang-btn px-3 py-1 rounded text-xs font-mono border border-white/20 hover:bg-white/10 transition-all" data-lang="es" data-i18n="lang.es">ES</button>
+                </div>
+                <a href="#experiments" class="text-sm font-mono hover:text-green-400 transition-colors" data-i18n="nav.experiments">EXPERIMENTOS</a>
+                <a href="https://github.com/rodrigoramosrs/webapps" target="_blank" class="text-sm font-mono hover:text-green-400 transition-colors" data-i18n="nav.github">GITHUB</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <!-- Status Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel mb-8 border border-white/10">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                <span class="font-mono text-xs tracking-widest text-gray-300" data-i18n="hero.status">SISTEMA OPERACIONAL</span>
+            </div>
+
+            <!-- Main Title -->
+            <h1 class="text-6xl md:text-8xl lg:text-9xl font-bold mb-6 tracking-tighter leading-none">
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 neon-text" data-i18n="hero.title">WEBAPPS</span>
+                <span class="block text-2xl md:text-4xl font-mono font-normal text-gray-500 mt-4 tracking-widest" data-i18n="hero.subtitle">LABORATÓRIO DIGITAL</span>
+            </h1>
+
+            <!-- Dynamic Typing Text -->
+            <div class="h-8 mb-12">
+                <p id="typing-text" class="font-mono text-lg md:text-xl text-gray-400 typing-cursor"></p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto mb-12">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-white mb-1" id="app-count">00</div>
+                    <div class="text-xs font-mono text-gray-500 tracking-widest" data-i18n="stats.experiments">EXPERIMENTOS</div>
+                </div>
+                <div class="text-center border-x border-white/10">
+                    <div class="text-3xl font-bold text-white mb-1">100%</div>
+                    <div class="text-xs font-mono text-gray-500 tracking-widest" data-i18n="stats.opensource">OPEN SOURCE</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-white mb-1">∞</div>
+                    <div class="text-xs font-mono text-gray-500 tracking-widest" data-i18n="stats.possibilities">POSSIBILIDADES</div>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="#experiments" class="group relative px-8 py-4 bg-white text-black font-bold rounded-lg overflow-hidden transition-all hover:scale-105">
+                    <span class="relative z-10 flex items-center gap-2">
+                        <span data-i18n="cta.explore">EXPLORAR LAB</span>
+                        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </span>
+                </a>
+                <a href="https://github.com/rodrigoramosrs/webapps" target="_blank" class="px-8 py-4 glass-panel rounded-lg font-mono text-sm hover:bg-white/10 transition-all border border-white/20" data-i18n="cta.source">
+                    VIEW SOURCE →
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce-slow">
+            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <div class="sticky top-16 z-30 glass-panel border-b border-white/10 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex gap-2 overflow-x-auto pb-2 sm:pb-0" id="filter-container">
+                <!-- Filters injected by JS -->
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-gray-500">
+                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <span id="active-count" data-i18n="counter.loading">CARREGANDO...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experiments Grid -->
+    <section id="experiments" class="relative py-20 px-6 min-h-screen grid-bg">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="apps-grid">
+                <!-- Apps injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-black py-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass-panel rounded-lg p-6 font-mono text-sm">
+                <div class="flex items-center gap-2 mb-4 text-gray-500">
+                    <span class="text-green-400">➜</span>
+                    <span class="text-blue-400" data-i18n="footer.path">~/webapps</span>
+                    <span class="text-gray-400" data-i18n="footer.gitBranch">git:(main)</span>
+                </div>
+                <div class="space-y-2 text-gray-400">
+                    <p>
+                        <span class="text-purple-400">$</span> 
+                        <span data-i18n="footer.message">echo "Obrigado por visitar o laboratório"</span>
+                    </p>
+                    <p>
+                        <span class="text-purple-400">$</span> 
+                        <span class="typing-cursor" data-i18n="footer.command">npm run deploy</span>
+                    </p>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-between items-center text-xs text-gray-600 font-mono">
+                <span>© 2026 rodrigoramosrs</span>
+                <span data-i18n="footer.madeWith">FEITO COM CAFÉ E CÓDIGO</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        // TRADUÇÕES COMPLETAS - 100% COBERTURA
+        // ==========================================
+        
+        const RESOURCES = {
+            'pt-BR': {
+                translation: {
+                    meta: {
+                        title: 'WebApps Lab | rodrigoramosrs'
+                    },
+                    nav: {
+                        brand: 'LAB://rodrigoramosrs/webapps',
+                        experiments: 'EXPERIMENTOS',
+                        github: 'GITHUB'
+                    },
+                    lang: {
+                        pt: 'PT',
+                        en: 'EN',
+                        es: 'ES'
+                    },
+                    hero: {
+                        status: 'SISTEMA OPERACIONAL',
+                        title: 'WEBAPPS',
+                        subtitle: 'LABORATÓRIO DIGITAL'
+                    },
+                    stats: {
+                        experiments: 'EXPERIMENTOS',
+                        opensource: 'OPEN SOURCE',
+                        possibilities: 'POSSIBILIDADES'
+                    },
+                    cta: {
+                        explore: 'EXPLORAR LAB',
+                        source: 'VIEW SOURCE →'
+                    },
+                    filter: {
+                        all: 'TODOS',
+                        tool: 'FERRAMENTAS',
+                        visual: 'VISUAL',
+                        utility: 'UTILITÁRIOS',
+                        game: 'JOGOS',
+                        data: 'DADOS'
+                    },
+                    counter: {
+                        loading: 'CARREGANDO...',
+                        active: '{{count}} EXPERIMENTOS ATIVOS',
+                        single: '{{count}} EXPERIMENTO ATIVO',
+                        none: 'NENHUM EXPERIMENTO'
+                    },
+                    card: {
+                        open: 'ABRIR EXPERIMENTO →',
+                        category: 'CATEGORIA'
+                    },
+                    footer: {
+                        path: '~/webapps',
+                        gitBranch: 'git:(main)',
+                        message: 'echo "Obrigado por visitar o laboratório"',
+                        command: 'npm run deploy',
+                        madeWith: 'FEITO COM CAFÉ E CÓDIGO'
+                    },
+                    typing: [
+                        'HTML • CSS • JavaScript',
+                        'Experimentos web interativos',
+                        'Criando o futuro digital',
+                        'Open source para todos'
+                    ],
+                    apps: {
+                        htmlEditor: {
+                            title: 'HTML Editor',
+                            desc: 'Editor HTML em tempo real com preview instantâneo'
+                        },
+                        cssPlayground: {
+                            title: 'CSS Playground',
+                            desc: 'Experimente propriedades CSS interativamente'
+                        },
+                        jsConsole: {
+                            title: 'JS Console',
+                            desc: 'Console JavaScript interativo no browser'
+                        },
+                        colorPicker: {
+                            title: 'Color Picker',
+                            desc: 'Seletor de cores avançado com exportação'
+                        },
+                        animationLab: {
+                            title: 'Animation Lab',
+                            desc: 'Laboratório de animações CSS e JS'
+                        },
+                        apiTester: {
+                            title: 'API Tester',
+                            desc: 'Teste requisições HTTP diretamente'
+                        }
+                    }
+                }
+            },
+            en: {
+                translation: {
+                    meta: {
+                        title: 'WebApps Lab | rodrigoramosrs'
+                    },
+                    nav: {
+                        brand: 'LAB://rodrigoramosrs/webapps',
+                        experiments: 'EXPERIMENTS',
+                        github: 'GITHUB'
+                    },
+                    lang: {
+                        pt: 'PT',
+                        en: 'EN',
+                        es: 'ES'
+                    },
+                    hero: {
+                        status: 'SYSTEM OPERATIONAL',
+                        title: 'WEBAPPS',
+                        subtitle: 'DIGITAL LABORATORY'
+                    },
+                    stats: {
+                        experiments: 'EXPERIMENTS',
+                        opensource: 'OPEN SOURCE',
+                        possibilities: 'POSSIBILITIES'
+                    },
+                    cta: {
+                        explore: 'EXPLORE LAB',
+                        source: 'VIEW SOURCE →'
+                    },
+                    filter: {
+                        all: 'ALL',
+                        tool: 'TOOLS',
+                        visual: 'VISUAL',
+                        utility: 'UTILITIES',
+                        game: 'GAMES',
+                        data: 'DATA'
+                    },
+                    counter: {
+                        loading: 'LOADING...',
+                        active: '{{count}} ACTIVE EXPERIMENTS',
+                        single: '{{count}} ACTIVE EXPERIMENT',
+                        none: 'NO EXPERIMENTS'
+                    },
+                    card: {
+                        open: 'OPEN EXPERIMENT →',
+                        category: 'CATEGORY'
+                    },
+                    footer: {
+                        path: '~/webapps',
+                        gitBranch: 'git:(main)',
+                        message: 'echo "Thanks for visiting the lab"',
+                        command: 'npm run deploy',
+                        madeWith: 'MADE WITH COFFEE AND CODE'
+                    },
+                    typing: [
+                        'HTML • CSS • JavaScript',
+                        'Interactive web experiments',
+                        'Building the digital future',
+                        'Open source for everyone'
+                    ],
+                    apps: {
+                        htmlEditor: {
+                            title: 'HTML Editor',
+                            desc: 'Real-time HTML editor with instant preview'
+                        },
+                        cssPlayground: {
+                            title: 'CSS Playground',
+                            desc: 'Interactively experiment with CSS properties'
+                        },
+                        jsConsole: {
+                            title: 'JS Console',
+                            desc: 'Interactive JavaScript console in the browser'
+                        },
+                        colorPicker: {
+                            title: 'Color Picker',
+                            desc: 'Advanced color picker with export features'
+                        },
+                        animationLab: {
+                            title: 'Animation Lab',
+                            desc: 'CSS and JS animation laboratory'
+                        },
+                        apiTester: {
+                            title: 'API Tester',
+                            desc: 'Test HTTP requests directly'
+                        }
+                    }
+                }
+            },
+            es: {
+                translation: {
+                    meta: {
+                        title: 'WebApps Lab | rodrigoramosrs'
+                    },
+                    nav: {
+                        brand: 'LAB://rodrigoramosrs/webapps',
+                        experiments: 'EXPERIMENTOS',
+                        github: 'GITHUB'
+                    },
+                    lang: {
+                        pt: 'PT',
+                        en: 'EN',
+                        es: 'ES'
+                    },
+                    hero: {
+                        status: 'SISTEMA OPERATIVO',
+                        title: 'WEBAPPS',
+                        subtitle: 'LABORATORIO DIGITAL'
+                    },
+                    stats: {
+                        experiments: 'EXPERIMENTOS',
+                        opensource: 'CÓDIGO ABIERTO',
+                        possibilities: 'POSIBILIDADES'
+                    },
+                    cta: {
+                        explore: 'EXPLORAR LAB',
+                        source: 'VER CÓDIGO →'
+                    },
+                    filter: {
+                        all: 'TODOS',
+                        tool: 'HERRAMIENTAS',
+                        visual: 'VISUAL',
+                        utility: 'UTILIDADES',
+                        game: 'JUEGOS',
+                        data: 'DATOS'
+                    },
+                    counter: {
+                        loading: 'CARGANDO...',
+                        active: '{{count}} EXPERIMENTOS ACTIVOS',
+                        single: '{{count}} EXPERIMENTO ACTIVO',
+                        none: 'NINGÚN EXPERIMENTO'
+                    },
+                    card: {
+                        open: 'ABRIR EXPERIMENTO →',
+                        category: 'CATEGORÍA'
+                    },
+                    footer: {
+                        path: '~/webapps',
+                        gitBranch: 'git:(main)',
+                        message: 'echo "Gracias por visitar el laboratorio"',
+                        command: 'npm run deploy',
+                        madeWith: 'HECHO CON CAFÉ Y CÓDIGO'
+                    },
+                    typing: [
+                        'HTML • CSS • JavaScript',
+                        'Experimentos web interactivos',
+                        'Creando el futuro digital',
+                        'Código abierto para todos'
+                    ],
+                    apps: {
+                        htmlEditor: {
+                            title: 'Editor HTML',
+                            desc: 'Editor HTML en tiempo real con vista previa instantánea'
+                        },
+                        cssPlayground: {
+                            title: 'CSS Playground',
+                            desc: 'Experimenta interactivamente con propiedades CSS'
+                        },
+                        jsConsole: {
+                            title: 'Consola JS',
+                            desc: 'Consola JavaScript interactiva en el navegador'
+                        },
+                        colorPicker: {
+                            title: 'Selector de Color',
+                            desc: 'Selector de colores avanzado con exportación'
+                        },
+                        animationLab: {
+                            title: 'Lab de Animación',
+                            desc: 'Laboratorio de animaciones CSS y JS'
+                        },
+                        apiTester: {
+                            title: 'Tester API',
+                            desc: 'Prueba peticiones HTTP directamente'
+                        }
+                    }
+                }
+            }
+        };
+
+        // ==========================================
+        // CONFIGURAÇÃO CENTRAL
+        // ==========================================
+        
+        const CONFIG = {
+            categories: [
+                { id: 'all', key: 'filter.all', color: 'from-gray-500 to-gray-600' },
+                { id: 'tool', key: 'filter.tool', color: 'from-blue-500 to-cyan-500' },
+                { id: 'visual', key: 'filter.visual', color: 'from-purple-500 to-pink-500' },
+                { id: 'utility', key: 'filter.utility', color: 'from-green-500 to-emerald-500' },
+                { id: 'game', key: 'filter.game', color: 'from-orange-500 to-red-500' }
+            ],
+            apps: [
+                {
+                    id: 'html-editor',
+                    key: 'htmlEditor',
+                    path: 'html/html_editor.html',
+                    category: 'tool',
+                    tags: ['editor', 'html', 'live'],
+                    color: 'from-orange-500 to-red-500'
+                },
+                // {
+                //     id: 'css-playground',
+                //     key: 'cssPlayground',
+                //     path: 'css/playground.html',
+                //     category: 'visual',
+                //     tags: ['css', 'design', 'visual'],
+                //     color: 'from-blue-500 to-cyan-500'
+                // },
+                // {
+                //     id: 'js-console',
+                //     key: 'jsConsole',
+                //     path: 'js/console.html',
+                //     category: 'utility',
+                //     tags: ['javascript', 'debug', 'dev'],
+                //     color: 'from-yellow-500 to-orange-500'
+                // },
+                // {
+                //     id: 'color-picker',
+                //     key: 'colorPicker',
+                //     path: 'tools/colorpicker.html',
+                //     category: 'utility',
+                //     tags: ['colors', 'design', 'tools'],
+                //     color: 'from-purple-500 to-pink-500'
+                // },
+                // {
+                //     id: 'animation-lab',
+                //     key: 'animationLab',
+                //     path: 'visual/animations.html',
+                //     category: 'visual',
+                //     tags: ['animation', 'motion', 'css'],
+                //     color: 'from-green-500 to-emerald-500'
+                // },
+                // {
+                //     id: 'api-tester',
+                //     key: 'apiTester',
+                //     path: 'tools/api_tester.html',
+                //     category: 'tool',
+                //     tags: ['api', 'http', 'testing'],
+                //     color: 'from-indigo-500 to-purple-500'
+                // }
+            ]
+        };
+
+        // ==========================================
+        // CLASSE PRINCIPAL
+        // ==========================================
+        
+        class WebAppsLab {
+            constructor() {
+                this.currentFilter = 'all';
+                this.currentLang = 'pt-BR';
+                this.typingInterval = null;
+            }
+
+            async init() {
+                await this.initI18n();
+                this.bindEvents();
+                this.renderAll();
+                document.body.classList.remove('i18n-loading');
+            }
+
+            async initI18n() {
+                const mapLang = (lang) => {
+                    const map = {
+                        'pt': 'pt-BR', 'pt-BR': 'pt-BR', 'pt-PT': 'pt-BR',
+                        'en': 'en', 'en-US': 'en', 'en-GB': 'en', 'en-CA': 'en', 'en-AU': 'en',
+                        'es': 'es', 'es-ES': 'es', 'es-MX': 'es', 'es-AR': 'es', 'es-CO': 'es', 'es-CL': 'es', 'es-PE': 'es'
+                    };
+                    return map[lang] || 'en';
+                };
+
+                await i18next
+                    .use(i18nextBrowserLanguageDetector)
+                    .init({
+                        resources: RESOURCES,
+                        fallbackLng: 'en',
+                        debug: false,
+                        detection: {
+                            order: ['localStorage', 'navigator', 'htmlTag'],
+                            caches: ['localStorage'],
+                            lookupNavigator: true
+                        },
+                        load: 'currentOnly'
+                    });
+
+                const detectedLang = i18next.language;
+                const mappedLang = mapLang(detectedLang);
+                
+                if (mappedLang !== detectedLang) {
+                    await i18next.changeLanguage(mappedLang);
+                }
+                
+                this.currentLang = i18next.language;
+                
+                i18next.on('languageChanged', (lng) => {
+                    this.currentLang = lng;
+                    this.updateLanguageUI();
+                    this.renderAll();
+                    this.restartTypingEffect();
+                });
+            }
+
+            bindEvents() {
+                document.getElementById('lang-switcher').addEventListener('click', (e) => {
+                    if (e.target.dataset.lang) {
+                        i18next.changeLanguage(e.target.dataset.lang);
+                    }
+                });
+
+                document.getElementById('filter-container').addEventListener('click', (e) => {
+                    if (e.target.dataset.filter) {
+                        this.setFilter(e.target.dataset.filter);
+                    }
+                });
+
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const target = document.querySelector(anchor.getAttribute('href'));
+                        if (target) target.scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
+
+                document.addEventListener('mousemove', this.handleParallax.bind(this));
+            }
+
+            updateLanguageUI() {
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === this.currentLang);
+                });
+                document.documentElement.lang = this.currentLang;
+                
+                // Atualiza o título da página
+                document.title = i18next.t('meta.title');
+            }
+
+            setFilter(filter) {
+                this.currentFilter = filter;
+                this.renderFilters();
+                this.renderApps();
+            }
+
+            renderAll() {
+                this.renderFilters();
+                this.renderApps();
+                this.startTypingEffect();
+                this.updateLanguageUI();
+            }
+
+            renderFilters() {
+                const container = document.getElementById('filter-container');
+                container.innerHTML = CONFIG.categories.map(cat => {
+                    const isActive = cat.id === this.currentFilter;
+                    const label = i18next.t(cat.key);
+                    return `
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-mono transition-all whitespace-nowrap ${isActive ? 'active' : 'glass-panel text-white hover:bg-white/10'}" 
+                                data-filter="${cat.id}">
+                            ${label}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            renderApps() {
+                const grid = document.getElementById('apps-grid');
+                const filtered = this.currentFilter === 'all' 
+                    ? CONFIG.apps 
+                    : CONFIG.apps.filter(app => app.category === this.currentFilter);
+
+                grid.innerHTML = filtered.map((app, index) => this.createAppCard(app, index)).join('');
+                
+                requestAnimationFrame(() => {
+                    const cards = grid.querySelectorAll('article');
+                    cards.forEach((card, i) => {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.style.transition = 'all 0.5s ease';
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, i * 100);
+                    });
+                });
+
+                const count = filtered.length;
+                let counterKey;
+                if (count === 0) counterKey = 'counter.none';
+                else if (count === 1) counterKey = 'counter.single';
+                else counterKey = 'counter.active';
+                
+                document.getElementById('active-count').textContent = i18next.t(counterKey, { count });
+                document.getElementById('app-count').textContent = CONFIG.apps.length.toString().padStart(2, '0');
+            }
+
+            createAppCard(app, index) {
+                const title = i18next.t(`apps.${app.key}.title`);
+                const desc = i18next.t(`apps.${app.key}.desc`);
+                const openText = i18next.t('card.open');
+                const categoryLabel = i18next.t(`filter.${app.category}`).toUpperCase();
+                
+                return `
+                    <article class="group relative glass-panel rounded-xl overflow-hidden card-hover border border-white/10" data-category="${app.category}">
+                        <div class="absolute inset-0 bg-gradient-to-br ${app.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+                        <div class="p-6 relative z-10">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br ${app.color} flex items-center justify-center text-white font-bold text-xl">
+                                    ${title.charAt(0)}
+                                </div>
+                                <span class="text-xs font-mono text-gray-500 border border-white/10 px-2 py-1 rounded">
+                                    ${categoryLabel}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r ${app.color} transition-all">${title}</h3>
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2">${desc}</p>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                ${app.tags.map(tag => `<span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">#${tag}</span>`).join('')}
+                            </div>
+                            <a href="${app.path}" class="block w-full py-3 text-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 transition-all font-mono text-sm group-hover:translate-y-0 transform translate-y-2 opacity-0 group-hover:opacity-100 duration-300">
+                                ${openText}
+                            </a>
+                        </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r ${app.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </article>
+                `;
+            }
+
+            startTypingEffect() {
+                if (this.typingInterval) clearTimeout(this.typingInterval);
+                
+                const phrases = i18next.t('typing', { returnObjects: true }) || [];
+                const element = document.getElementById('typing-text');
+                
+                if (!element || !phrases.length) return;
+                
+                let phraseIndex = 0;
+                let charIndex = 0;
+                let isDeleting = false;
+
+                const type = () => {
+                    const current = phrases[phraseIndex];
+                    
+                    if (isDeleting) {
+                        element.textContent = current.substring(0, charIndex - 1);
+                        charIndex--;
+                    } else {
+                        element.textContent = current.substring(0, charIndex + 1);
+                        charIndex++;
+                    }
+
+                    let speed = isDeleting ? 50 : 100;
+
+                    if (!isDeleting && charIndex === current.length) {
+                        speed = 2000;
+                        isDeleting = true;
+                    } else if (isDeleting && charIndex === 0) {
+                        isDeleting = false;
+                        phraseIndex = (phraseIndex + 1) % phrases.length;
+                        speed = 500;
+                    }
+
+                    this.typingInterval = setTimeout(type, speed);
+                };
+
+                type();
+            }
+
+            restartTypingEffect() {
+                this.startTypingEffect();
+            }
+
+            handleParallax(e) {
+                const floats = document.querySelectorAll('.animate-float');
+                floats.forEach((el, index) => {
+                    const speed = (index + 1) * 20;
+                    const x = (window.innerWidth - e.pageX * speed) / 100;
+                    const y = (window.innerHeight - e.pageY * speed) / 100;
+                    el.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                });
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new WebAppsLab();
+            app.init();
+        });
+    </script>
+</body>
+</html>
